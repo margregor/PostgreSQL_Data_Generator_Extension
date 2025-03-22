@@ -9,8 +9,8 @@ add_project_arguments('-DWIN32', language: 'c')
 pg_config = find_program('pg_config')
 
 includedir_server = run_command(pg_config, '--includedir-server', check: true).stdout().strip()
-includedir_server_win32 = run_command(pg_config, '--includedir-server', check: true).stdout().strip() + '/port/win32'
-includedir_server_win32_msvc = run_command(pg_config, '--includedir-server', check: true).stdout().strip() + '/port/win32_msvc'
+includedir_server_win32 = run_command(pg_config, '--includedir-server', check: true).stdout().strip() / 'port' / 'win32'
+includedir_server_win32_msvc = run_command(pg_config, '--includedir-server', check: true).stdout().strip() / 'port' / 'win32_msvc'
 includedir = run_command(pg_config, '--includedir', check: true).stdout().strip()
 libdir = run_command(pg_config, '--libdir', check: true).stdout().strip()
 pkglibdir = run_command(pg_config, '--pkglibdir', check: true).stdout().strip()
