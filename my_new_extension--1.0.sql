@@ -1,0 +1,3 @@
+CREATE FUNCTION my_new_extension_test(inp text)
+RETURNS text AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT VOLATILE;

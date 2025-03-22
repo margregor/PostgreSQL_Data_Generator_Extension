@@ -1,0 +1,4 @@
+comment = 'testing things'
+default_version = '1.0'
+module_pathname = '$libdir/my_new_extension'
+relocatable = true
