@@ -1,5 +1,7 @@
 An example extension for PostgreSQL 17
 
+Requires pg_config.exe to be in PATH
+
 To compile:
 ```
 meson setup builddir
