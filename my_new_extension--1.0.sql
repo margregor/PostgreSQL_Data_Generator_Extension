@@ -1,3 +1,3 @@
-CREATE FUNCTION my_new_extension_test(inp text)
-RETURNS text AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT VOLATILE;
+CREATE FUNCTION add_one(integer)
+RETURNS integer AS 'MODULE_PATHNAME', 'add_one'
+LANGUAGE C STRICT;
