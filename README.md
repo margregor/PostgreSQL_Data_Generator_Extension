@@ -1,4 +1,5 @@
 An example extension for PostgreSQL 17
+![example workflow](https://github.com/margregor/a_postgres_extension/actions/workflows/compile.yml/badge.svg)
 
 Requires pg_config.exe to be in PATH
 
