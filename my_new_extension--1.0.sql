@@ -1,3 +1,3 @@
-CREATE FUNCTION add_one(integer)
-RETURNS integer AS 'MODULE_PATHNAME', 'add_one'
+CREATE FUNCTION my_set_returning_function()
+RETURNS SETOF RECORD AS 'MODULE_PATHNAME', 'my_set_returning_function'
 LANGUAGE C STRICT;
