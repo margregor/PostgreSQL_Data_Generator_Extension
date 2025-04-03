@@ -2,7 +2,7 @@ project(
   'my_new_extension',
   'c',
   version: '1.0',
-  default_options: ['buildtype=release'],
+  default_options: ['buildtype=release', 'warning_level=3'],
 )
 add_project_arguments('-DWIN32', language: 'c')
 
