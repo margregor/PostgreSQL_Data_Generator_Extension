@@ -15,6 +15,7 @@ includedir = run_command(pg_config, '--includedir', check: true).stdout().strip(
 libdir = run_command(pg_config, '--libdir', check: true).stdout().strip()
 pkglibdir = run_command(pg_config, '--pkglibdir', check: true).stdout().strip()
 sharedir = run_command(pg_config, '--sharedir', check: true).stdout().strip()
+bindir = run_command(pg_config, '--bindir', check: true).stdout().strip()
 
 postgres_lib = meson.get_compiler('c').find_library('postgres', dirs: libdir, required: true)
 
@@ -38,3 +39,10 @@ install_data(
   'my_new_extension--1.0.sql',
   install_dir: sharedir / 'extension',
 )
+
+pg_regress = find_program('pg_regress', dirs: [libdir / 'pgxs' / 'src' / 'test' / 'regress'])
+test('regression', pg_regress,
+  args: ['--bindir', bindir,
+         '--inputdir', meson.current_source_dir() / 'test',
+         '--user=postgres',
+         'basic'])
