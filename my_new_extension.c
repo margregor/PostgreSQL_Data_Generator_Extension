@@ -54,6 +54,10 @@ PGDLLEXPORT Datum my_set_returning_function(PG_FUNCTION_ARGS)
         for (int i = 0; i < col_count; i++)
         {
             char buf[64];
+            
+            if (strlen(NameStr(tupdesc->attrs[i].attname)) > 30) //Low limit to be safe
+                elog(ERROR, "Name of attribute %s is too long", NameStr(tupdesc->attrs[i].attname));
+
             snprintf(buf, sizeof(buf), "Row%d_%s", row, NameStr(tupdesc->attrs[i].attname));
             values[i] = CStringGetTextDatum(buf);
             nulls[i] = false;
