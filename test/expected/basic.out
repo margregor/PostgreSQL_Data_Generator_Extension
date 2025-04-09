@@ -1,0 +1,17 @@
+CREATE EXTENSION my_new_extension;
+SELECT * FROM my_set_returning_function(10) AS t(col1 TEXT, col2 TEXT, baazcol TEXT);
+    col1    |    col2    |    baazcol    
+------------+------------+---------------
+ Row1_col1  | Row1_col2  | Row1_baazcol
+ Row2_col1  | Row2_col2  | Row2_baazcol
+ Row3_col1  | Row3_col2  | Row3_baazcol
+ Row4_col1  | Row4_col2  | Row4_baazcol
+ Row5_col1  | Row5_col2  | Row5_baazcol
+ Row6_col1  | Row6_col2  | Row6_baazcol
+ Row7_col1  | Row7_col2  | Row7_baazcol
+ Row8_col1  | Row8_col2  | Row8_baazcol
+ Row9_col1  | Row9_col2  | Row9_baazcol
+ Row10_col1 | Row10_col2 | Row10_baazcol
+(10 rows)
+
+DROP EXTENSION my_new_extension;
