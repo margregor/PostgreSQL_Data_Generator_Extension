@@ -18,17 +18,23 @@ sharedir = run_command(pg_config, '--sharedir', check: true).stdout().strip()
 bindir = run_command(pg_config, '--bindir', check: true).stdout().strip()
 
 postgres_lib = meson.get_compiler('c').find_library('postgres', dirs: libdir, required: true)
+python_dep = dependency('Python3')
 
 shared_module(
   'my_new_extension',
   'my_new_extension.c',
+  'python_interface.c',
+  'py_interaction.c',
   include_directories: [
     includedir_server,
     includedir,
     includedir_server_win32,
     includedir_server_win32_msvc,
   ],
-  dependencies: [postgres_lib],
+  dependencies: [
+    postgres_lib,
+    python_dep
+    ],
   install: true,
   install_dir: pkglibdir,
   name_prefix: '',
@@ -38,6 +44,11 @@ install_data(
   'my_new_extension.control',
   'my_new_extension--1.0.sql',
   install_dir: sharedir / 'extension',
+)
+
+install_data(
+  'c_interaction.py',
+  install_dir: sharedir / 'my_new_extension',
 )
 
 pg_regress = find_program('pg_regress', dirs: [libdir / 'pgxs' / 'src' / 'test' / 'regress'])

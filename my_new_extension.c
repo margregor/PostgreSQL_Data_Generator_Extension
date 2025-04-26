@@ -1,10 +1,20 @@
+#pragma region Postgres Includes
+#pragma warning(push)
+#pragma warning(disable : 4057)
+#pragma warning(disable : 4100)
+#pragma warning(disable : 4200)
+#pragma warning(disable : 4244)
+#pragma warning(disable : 4267)
 #include "postgres.h"
 #include "fmgr.h"
 #include "funcapi.h"
 #include "utils/builtins.h"
 #include "executor/spi.h"
-#include "access/htup_details.h"
 #include "miscadmin.h"
+#pragma warning(pop)
+#pragma endregion
+
+#include "python_interface.h"
 
 PG_MODULE_MAGIC;
 
@@ -14,11 +24,7 @@ PGDLLEXPORT Datum my_set_returning_function(PG_FUNCTION_ARGS)
 {
     ReturnSetInfo *rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
     TupleDesc tupdesc;
-    Tuplestorestate *tupstore;
-    MemoryContext per_query_ctx;
-    MemoryContext oldcontext;
-    int col_count;
-    int row_count = PG_GETARG_INT32(0);
+    const int row_count = PG_GETARG_INT32(0);
 
     elog(DEBUG1, "Function my_set_returning_function called");
 
@@ -34,12 +40,12 @@ PGDLLEXPORT Datum my_set_returning_function(PG_FUNCTION_ARGS)
     if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
         elog(ERROR, "return type must be a composite type");
 
-    col_count = tupdesc->natts;
+    const int col_count = tupdesc->natts;
 
-    per_query_ctx = rsinfo->econtext->ecxt_per_query_memory;
-    oldcontext = MemoryContextSwitchTo(per_query_ctx);
+    MemoryContext per_query_ctx = rsinfo->econtext->ecxt_per_query_memory;
+    MemoryContext oldcontext = MemoryContextSwitchTo(per_query_ctx);
 
-    tupstore = tuplestore_begin_heap(true, false, work_mem);
+    Tuplestorestate *tupstore = tuplestore_begin_heap(true, false, work_mem);
     rsinfo->returnMode = SFRM_Materialize;
     rsinfo->setResult = tupstore;
     rsinfo->setDesc = tupdesc;
@@ -48,6 +54,11 @@ PGDLLEXPORT Datum my_set_returning_function(PG_FUNCTION_ARGS)
 
     Datum *values = (Datum *) palloc0(col_count * sizeof(Datum));
     bool *nulls = (bool *) palloc0(col_count * sizeof(bool));
+
+    
+
+    char* types[] = {"string", "string"};
+    doPythonThings(types, 2);
 
     for (int row = 1; row <= row_count; row++)
     {
