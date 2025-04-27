@@ -74,7 +74,6 @@ PGDLLEXPORT Datum my_set_returning_function(PG_FUNCTION_ARGS)
         tuplestore_putvalues(tupstore, tupdesc, column_values, nulls);
         pfree(column_values);
     }
-    doPythonFinalize();
 
     for (int i = 0; i < col_count; i++)
     {

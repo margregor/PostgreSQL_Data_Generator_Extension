@@ -5,6 +5,5 @@
 
 void doPythonInitialize();
 Datum* doPythonThings(char** type_hints, int count);
-void doPythonFinalize();
 
 #endif //PYTHON_INTERFACE_H

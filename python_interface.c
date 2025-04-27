@@ -22,6 +22,11 @@
 
 void doPythonInitialize()
 {
+    static bool inited = false;
+    
+    if (inited)
+        return;
+
     Py_Initialize();
 
     char share_path[MAXPGPATH];
@@ -32,6 +37,7 @@ void doPythonInitialize()
     char* command = psprintf("import sys; sys.path.append(\"%s\")", extension_share_path);
     PyRun_SimpleString(command);
     pfree(command);
+    inited = true;
 }
 
 Datum *doPythonThings(char **type_hints, int count)
@@ -95,9 +101,4 @@ Datum *doPythonThings(char **type_hints, int count)
     
 
     return ret;
-}
-
-void doPythonFinalize()
-{
-    Py_Finalize();
 }
