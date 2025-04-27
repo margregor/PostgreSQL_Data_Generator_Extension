@@ -14,6 +14,7 @@
 #pragma warning(pop)
 #pragma endregion
 
+#include <Python.h>
 #include "python_interface.h"
 
 PG_MODULE_MAGIC;
@@ -55,27 +56,31 @@ PGDLLEXPORT Datum my_set_returning_function(PG_FUNCTION_ARGS)
     Datum *values = (Datum *) palloc0(col_count * sizeof(Datum));
     bool *nulls = (bool *) palloc0(col_count * sizeof(bool));
 
-    
-
-    char* types[] = {"string", "string"};
-    doPythonThings(types, 2);
-
-    for (int row = 1; row <= row_count; row++)
+    char** column_names = palloc_array(char*, col_count);
+    for (int i = 0; i < col_count; i++)
     {
-        for (int i = 0; i < col_count; i++)
-        {
-            char buf[64];
-            
-            if (strlen(NameStr(tupdesc->attrs[i].attname)) > 30) //Low limit to be safe
-                elog(ERROR, "Name of attribute %s is too long", NameStr(tupdesc->attrs[i].attname));
-
-            snprintf(buf, sizeof(buf), "Row%d_%s", row, NameStr(tupdesc->attrs[i].attname));
-            values[i] = CStringGetTextDatum(buf);
-            nulls[i] = false;
-        }
-        tuplestore_putvalues(tupstore, tupdesc, values, nulls);
+        column_names[i] = psprintf("%s", NameStr(tupdesc->attrs[i].attname));
     }
 
+    for (int i = 0; i < col_count; i++)
+    {
+        nulls[i] = false;
+    }
+
+    doPythonInitialize();
+    for (int row = 1; row <= row_count; row++)
+    {
+        Datum *column_values = doPythonThings(column_names, col_count);//Need to da an init/terminate thing because calling this twice crashes everything
+        tuplestore_putvalues(tupstore, tupdesc, column_values, nulls);
+        pfree(column_values);
+    }
+    doPythonFinalize();
+
+    for (int i = 0; i < col_count; i++)
+    {
+        pfree(column_names[i]);
+    }
+    pfree(column_names);
     pfree(values);
     pfree(nulls);
 

@@ -20,20 +20,7 @@
 #include "py_interaction.h"
 
 PyObject** generate_multiple_by_types(const char* inputs[], int count, int num_arrays, int* out_size) {
-    _putenv("PYTHONVERBOSE=1");
-
-    Py_Initialize();
     
-    char share_path[MAXPGPATH];
-    char extension_share_path[MAXPGPATH];
-
-    get_share_path(my_exec_path, share_path);
-    join_path_components(extension_share_path, share_path, "my_new_extension");
-    char* command = psprintf("import sys; sys.path.append(\"%s\")", extension_share_path);
-    PyRun_SimpleString(command);
-    pfree(command);
-
-
     
     PyObject *pModule = PyImport_ImportModule("c_interaction");
     if (!pModule) {

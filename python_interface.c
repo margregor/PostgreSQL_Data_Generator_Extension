@@ -20,7 +20,22 @@
 #include "py_interaction.h"
 #include "python_interface.h"
 
-void doPythonThings(char** type_hints, int count) {
+void doPythonInitialize()
+{
+    Py_Initialize();
+
+    char share_path[MAXPGPATH];
+    char extension_share_path[MAXPGPATH];
+
+    get_share_path(my_exec_path, share_path);
+    join_path_components(extension_share_path, share_path, "my_new_extension");
+    char* command = psprintf("import sys; sys.path.append(\"%s\")", extension_share_path);
+    PyRun_SimpleString(command);
+    pfree(command);
+}
+
+Datum *doPythonThings(char **type_hints, int count)
+{
     int num_arrays = 3;  // Specify the number of arrays to generate
     int out_size = 0;
 
@@ -29,6 +44,8 @@ void doPythonThings(char** type_hints, int count) {
     if (results == NULL) {
         elog(ERROR, "Error calling Python");
     }
+
+    Datum *ret = palloc0_array(Datum, count);
 
     // Import datetime module to check for date type
     PyObject *datetime_module = PyImport_ImportModule("datetime");
@@ -51,19 +68,20 @@ void doPythonThings(char** type_hints, int count) {
             PyObject *item = PyList_GetItem(array_item, j);
 
             if (PyLong_Check(item)) {
-                elog(NOTICE, " - [%s] int: %ld\n", type_hints[j], PyLong_AsLong(item));
+                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(PyObject_Str(item)));
             } else if (PyFloat_Check(item)) {
-                elog(NOTICE, " - [%s] float: %f\n", type_hints[j], PyFloat_AsDouble(item));
+                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(PyObject_Str(item)));
             } else if (PyBool_Check(item)) {
-                elog(NOTICE, " - [%s] bool: %s\n", type_hints[j], PyObject_IsTrue(item) ? "True" : "False");
+                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(PyObject_Str(item)));
             } else if (PyUnicode_Check(item)) {
-                elog(NOTICE, " - [%s] string: %s\n", type_hints[j], PyUnicode_AsUTF8(item));
+                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(item));
             } else if (PyObject_IsInstance(item, date_class)) {
-                PyObject *str_repr = PyObject_Str(item);
-                elog(NOTICE, " - [%s] date: %s\n", type_hints[j], PyUnicode_AsUTF8(str_repr));
+                PyObject *isoFormatFunc = PyObject_GetAttrString(item, "isoformat");
+                PyObject *str_repr = PyObject_CallObject(isoFormatFunc, NULL);
+                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
                 Py_DECREF(str_repr);
             } else {
-                elog(NOTICE, " - [%s] unknown type\n", type_hints[j]);
+                ret[j] = CStringGetTextDatum(type_hints[j]);
             }
 
             Py_DECREF(item);
@@ -74,5 +92,12 @@ void doPythonThings(char** type_hints, int count) {
     Py_DECREF(datetime_module);
     pfree(results);
 
+    
+
+    return ret;
+}
+
+void doPythonFinalize()
+{
     Py_Finalize();
 }
