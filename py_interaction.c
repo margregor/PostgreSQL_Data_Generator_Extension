@@ -5,12 +5,12 @@
 #pragma warning(disable : 4200)
 #pragma warning(disable : 4244)
 #pragma warning(disable : 4267)
-#include "postgres.h"
-#include "fmgr.h"
-#include "funcapi.h"
-#include "utils/builtins.h"
-#include "executor/spi.h"
-#include "miscadmin.h"
+#include <postgres.h>
+#include <fmgr.h>
+#include <funcapi.h>
+#include <utils/builtins.h>
+#include <executor/spi.h>
+#include <miscadmin.h>
 #pragma warning(pop)
 #pragma endregion
 

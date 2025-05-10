@@ -48,6 +48,10 @@ install_data(
 
 install_data(
   'c_interaction.py',
+  'adress.py',
+  'adress_generator.py',
+  'personal_data.py',
+  'personal_generator.py',
   install_dir: sharedir / 'my_new_extension',
 )
 

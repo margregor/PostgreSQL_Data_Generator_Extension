@@ -5,12 +5,12 @@
 #pragma warning(disable : 4200)
 #pragma warning(disable : 4244)
 #pragma warning(disable : 4267)
-#include "postgres.h"
-#include "fmgr.h"
-#include "funcapi.h"
-#include "utils/builtins.h"
-#include "executor/spi.h"
-#include "miscadmin.h"
+#include <postgres.h>
+#include <fmgr.h>
+#include <funcapi.h>
+#include <utils/builtins.h>
+#include <executor/spi.h>
+#include <miscadmin.h>
 #pragma warning(pop)
 #pragma endregion
 
@@ -70,7 +70,7 @@ PGDLLEXPORT Datum my_set_returning_function(PG_FUNCTION_ARGS)
     doPythonInitialize();
     for (int row = 1; row <= row_count; row++)
     {
-        Datum *column_values = doPythonThings(column_names, col_count);//Need to da an init/terminate thing because calling this twice crashes everything
+        Datum *column_values = doPythonThings(column_names, col_count);
         tuplestore_putvalues(tupstore, tupdesc, column_values, nulls);
         pfree(column_values);
     }

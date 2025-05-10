@@ -1,7 +1,7 @@
 #ifndef PYTHON_INTERFACE_H
 #define PYTHON_INTERFACE_H
 
-#include "postgres.h"
+#include <postgres.h>
 
 void doPythonInitialize();
 Datum* doPythonThings(char** type_hints, int count);

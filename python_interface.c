@@ -5,12 +5,13 @@
 #pragma warning(disable : 4200)
 #pragma warning(disable : 4244)
 #pragma warning(disable : 4267)
-#include "postgres.h"
-#include "fmgr.h"
-#include "funcapi.h"
-#include "utils/builtins.h"
-#include "executor/spi.h"
-#include "miscadmin.h"
+#include <postgres.h>
+#include <fmgr.h>
+#include <funcapi.h>
+#include <utils/builtins.h>
+#include <executor/spi.h>
+#include <miscadmin.h>
+#include <utils/fmgroids.h>
 #pragma warning(pop)
 #pragma endregion
 
@@ -84,10 +85,13 @@ Datum *doPythonThings(char **type_hints, int count)
             } else if (PyObject_IsInstance(item, date_class)) {
                 PyObject *isoFormatFunc = PyObject_GetAttrString(item, "isoformat");
                 PyObject *str_repr = PyObject_CallObject(isoFormatFunc, NULL);
-                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
+                const char *date_str = PyUnicode_AsUTF8(str_repr);
+                //ret[j] = DirectFunctionCall1(date_in, CStringGetDatum(date_str));// We gotta check the expected types of the set and return a text or a dedicated type
+                ret[j] = CStringGetTextDatum(date_str);
                 Py_DECREF(str_repr);
+                Py_DECREF(isoFormatFunc);
             } else {
-                ret[j] = CStringGetTextDatum(type_hints[j]);
+                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(PyObject_Str(item)));
             }
 
             Py_DECREF(item);
