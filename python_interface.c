@@ -75,11 +75,17 @@ Datum *doPythonThings(char **type_hints, int count)
             PyObject *item = PyList_GetItem(array_item, j);
 
             if (PyLong_Check(item)) {
-                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(PyObject_Str(item)));
+                PyObject *str_repr = PyObject_Str(item);
+                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
+                Py_DECREF(str_repr);
             } else if (PyFloat_Check(item)) {
-                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(PyObject_Str(item)));
+                PyObject *str_repr = PyObject_Str(item);
+                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
+                Py_DECREF(str_repr);
             } else if (PyBool_Check(item)) {
-                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(PyObject_Str(item)));
+                PyObject *str_repr = PyObject_Str(item);
+                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
+                Py_DECREF(str_repr);
             } else if (PyUnicode_Check(item)) {
                 ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(item));
             } else if (PyObject_IsInstance(item, date_class)) {
@@ -91,7 +97,9 @@ Datum *doPythonThings(char **type_hints, int count)
                 Py_DECREF(str_repr);
                 Py_DECREF(isoFormatFunc);
             } else {
-                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(PyObject_Str(item)));
+                PyObject *str_repr = PyObject_Str(item);
+                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
+                Py_DECREF(str_repr);
             }
 
         }
