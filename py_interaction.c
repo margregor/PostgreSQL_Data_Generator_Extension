@@ -21,7 +21,7 @@
 
 PyObject** generate_multiple_by_types(const char* inputs[], int count, int num_arrays, int* out_size) {
     
-    
+
     PyObject *pModule = PyImport_ImportModule("c_interaction");
     if (!pModule) {
         elog(WARNING, "Failed to import myscript.py");
@@ -49,6 +49,7 @@ PyObject** generate_multiple_by_types(const char* inputs[], int count, int num_a
     Py_DECREF(pArgs);
     Py_DECREF(pFunc);
     Py_DECREF(pModule);
+    Py_DECREF(pyList);
 
     if (!pReturn || !PyList_Check(pReturn)) {
         PyErr_Print();

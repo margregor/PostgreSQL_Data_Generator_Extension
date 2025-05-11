@@ -94,8 +94,8 @@ Datum *doPythonThings(char **type_hints, int count)
                 ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(PyObject_Str(item)));
             }
 
-            Py_DECREF(item);
         }
+        Py_DECREF(array_item);
     }
 
     Py_DECREF(date_class);
