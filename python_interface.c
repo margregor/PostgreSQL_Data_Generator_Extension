@@ -41,18 +41,19 @@ void doPythonInitialize()
     inited = true;
 }
 
-Datum *doPythonThings(char **type_hints, int count)
+void doPythonThings(char **type_hints, int col_count, int row_count,
+    Tuplestorestate *tupstore, TupleDesc tupdesc, bool *nulls)
 {
-    int num_arrays = 3;  // Specify the number of arrays to generate
+    int num_arrays = row_count;  // Specify the number of arrays to generate
     int out_size = 0;
 
-    PyObject **results = generate_multiple_by_types(type_hints, count, num_arrays, &out_size);
+    PyObject **results = generate_multiple_by_types(type_hints, col_count, num_arrays, &out_size);
 
     if (results == NULL) {
         elog(ERROR, "Error calling Python");
     }
 
-    Datum *ret = palloc0_array(Datum, count);
+    Datum *ret = palloc0_array(Datum, col_count);
 
     // Import datetime module to check for date type
     PyObject *datetime_module = PyImport_ImportModule("datetime");
@@ -104,13 +105,12 @@ Datum *doPythonThings(char **type_hints, int count)
 
         }
         Py_DECREF(array_item);
+        tuplestore_putvalues(tupstore, tupdesc, ret, nulls);
     }
 
     Py_DECREF(date_class);
     Py_DECREF(datetime_module);
     pfree(results);
 
-    
-
-    return ret;
+    pfree(ret);
 }

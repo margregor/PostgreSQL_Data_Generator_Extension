@@ -59,7 +59,7 @@ PyObject** generate_multiple_by_types(const char* inputs[], int count, int num_a
     }
 
     *out_size = (int)PyList_Size(pReturn);
-    PyObject** result_array = (PyObject**) palloc(sizeof(PyObject*) * (*out_size));
+    PyObject** result_array = palloc(sizeof(PyObject*) * *out_size);
 
     for (int i = 0; i < *out_size; ++i) {
         result_array[i] = PyList_GetItem(pReturn, i);

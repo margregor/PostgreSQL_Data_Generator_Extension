@@ -68,12 +68,9 @@ PGDLLEXPORT Datum my_set_returning_function(PG_FUNCTION_ARGS)
     }
 
     doPythonInitialize();
-    for (int row = 1; row <= row_count; row++)
-    {
-        Datum *column_values = doPythonThings(column_names, col_count);
-        tuplestore_putvalues(tupstore, tupdesc, column_values, nulls);
-        pfree(column_values);
-    }
+    doPythonThings(column_names, col_count, row_count,
+        tupstore, tupdesc, nulls);
+
 
     for (int i = 0; i < col_count; i++)
     {
