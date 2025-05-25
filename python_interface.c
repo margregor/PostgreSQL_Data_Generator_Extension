@@ -42,34 +42,74 @@ void doPythonInitialize()
     inited = true;
 }
 
-Datum convert_python_item_to_datum(PyObject *date_class, PyObject *item) {
+Datum convert_python_item_to_datum(PyObject *date_class, PyObject *item, Oid expected_type) {
     Datum ret;
 
-    if (PyLong_Check(item)) {
-        PyObject *str_repr = PyObject_Str(item);
-        ret = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
-        Py_DECREF(str_repr);
+    if (PyBool_Check(item)) {
+        if (expected_type == BOOLOID)
+            ret = BoolGetDatum(item == Py_True);
+        else if (expected_type == TEXTOID) {
+            PyObject *str_repr = PyObject_Str(item);
+            ret = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
+            Py_DECREF(str_repr);
+        } else {
+            elog(ERROR, "Unexpected type for boolean value");
+        }
     } else if (PyFloat_Check(item)) {
-        PyObject *str_repr = PyObject_Str(item);
-        ret = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
-        Py_DECREF(str_repr);
-    } else if (PyBool_Check(item)) {
-        PyObject *str_repr = PyObject_Str(item);
-        ret = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
-        Py_DECREF(str_repr);
+        if (expected_type == FLOAT4OID)
+            ret = Float4GetDatum((float4) PyFloat_AsDouble(item));
+        else if (expected_type == FLOAT8OID)
+            ret = Float8GetDatum(PyFloat_AsDouble(item));
+        else if (expected_type == TEXTOID) {
+            PyObject *str_repr = PyObject_Str(item);
+            ret = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
+            Py_DECREF(str_repr);
+        } else {
+            elog(ERROR, "Unexpected type for floating point value");
+        }
+    } else if (PyLong_Check(item)) {
+        if (expected_type == INT2OID)
+            ret = Int32GetDatum((int16) PyLong_AsLong(item));
+        else if (expected_type == INT4OID)
+            ret = Int32GetDatum((int32) PyLong_AsLong(item));
+        else if (expected_type == INT8OID)
+            ret = Int64GetDatum(PyLong_AsLong(item));
+        else if (expected_type == TEXTOID) {
+            PyObject *str_repr = PyObject_Str(item);
+            ret = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
+            Py_DECREF(str_repr);
+        } else {
+            elog(ERROR, "Unexpected return type for integer value");
+        }
     } else if (PyUnicode_Check(item)) {
-        ret = CStringGetTextDatum(PyUnicode_AsUTF8(item));
+        if (expected_type == TEXTOID) {
+            ret = CStringGetTextDatum(PyUnicode_AsUTF8(item));
+        } else {
+            elog(ERROR, "Unexpected type for text value");
+        }
     } else if (PyObject_IsInstance(item, date_class)) {
-        PyObject *isoFormatFunc = PyObject_GetAttrString(item, "isoformat");
-        PyObject *str_repr = PyObject_CallObject(isoFormatFunc, NULL);
-        const char *date_str = PyUnicode_AsUTF8(str_repr);
-        ret = CStringGetTextDatum(date_str);
-        Py_DECREF(str_repr);
-        Py_DECREF(isoFormatFunc);
-    } else {
+        if (expected_type == DATEOID) {
+            PyObject *isoFormatFunc = PyObject_GetAttrString(item, "isoformat");
+            PyObject *str_repr = PyObject_CallObject(isoFormatFunc, NULL);
+            ret = DirectFunctionCall1(date_in, CStringGetDatum(PyUnicode_AsUTF8(str_repr)));
+            Py_DECREF(str_repr);
+            Py_DECREF(isoFormatFunc);
+        } else if (expected_type == TEXTOID) {
+            PyObject *isoFormatFunc = PyObject_GetAttrString(item, "isoformat");
+            PyObject *str_repr = PyObject_CallObject(isoFormatFunc, NULL);
+            ret = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
+            Py_DECREF(str_repr);
+            Py_DECREF(isoFormatFunc);
+        } else {
+            elog(ERROR, "Unexpected type for date value");
+        }
+    } else if (expected_type == TEXTOID) {
+        elog(WARNING, "Unknown type");
         PyObject *str_repr = PyObject_Str(item);
         ret = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
         Py_DECREF(str_repr);
+    } else {
+        elog(ERROR, "Unknown type with unexpected return type");
     }
 
     return ret;
@@ -104,7 +144,9 @@ void doPythonThings(char **type_hints, const int col_count, const int row_count,
 
         for (int j = 0; j < array_size; ++j) {
             PyObject *item = PyList_GetItem(array_item, j);
-            ret[j] = convert_python_item_to_datum(date_class, item);
+            Oid expected_type = TupleDescAttr(tupdesc, j)->atttypid;
+
+            ret[j] = convert_python_item_to_datum(date_class, item, expected_type);
         }
 
         Py_DECREF(array_item);
