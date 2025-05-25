@@ -19,6 +19,8 @@
 #include <Python.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "cjson/cJSON.h"
+#include "utils/palloc.h"
 #include "py_interaction.h"
 #include "python_interface.h"
 
@@ -39,11 +41,18 @@ void doPythonInitialize()
     char* command = psprintf("import sys; sys.path.append(\"%s\")", extension_share_path);
     PyRun_SimpleString(command);
     pfree(command);
+
+    cJSON_Hooks hooks = {
+        .malloc_fn = palloc,
+        .free_fn = pfree
+    };
+    cJSON_InitHooks(&hooks);
+
     inited = true;
 }
 
 Datum convert_python_item_to_datum(PyObject *date_class, PyObject *item, Oid expected_type) {
-    Datum ret;
+    Datum ret = CStringGetTextDatum("");
 
     if (PyBool_Check(item)) {
         if (expected_type == BOOLOID)
@@ -118,10 +127,66 @@ Datum convert_python_item_to_datum(PyObject *date_class, PyObject *item, Oid exp
 void doPythonThings(char **type_hints, const int col_count, const int row_count,
                     Tuplestorestate *tupstore, const TupleDesc tupdesc, const bool *nulls)
 {
-    const int num_arrays = row_count;  // Specify the number of arrays to generate
-    int out_size = 0;
+    char alias_config_path[MAXPGPATH];
+    get_share_path(my_exec_path, alias_config_path);
+    join_path_components(alias_config_path, alias_config_path, "my_new_extension");
+    join_path_components(alias_config_path, alias_config_path, "aliases.json");
 
-    PyObject **results = generate_multiple_by_types(type_hints, col_count, num_arrays, &out_size);
+    if (_access(alias_config_path, 0) == -1) {
+        elog(INFO, "Alias configuration file %s not found", alias_config_path);
+    }
+    else {
+        FILE *fp = fopen(alias_config_path, "r");
+        if (fp == NULL) {
+            elog(ERROR, "Unable to open aliases file");
+        }
+        if (fseek(fp, 0, SEEK_END) != 0) {
+            fclose(fp);
+            elog(ERROR, "Failed to seek end of file");
+        }
+        const long length = ftell(fp);
+        rewind(fp);
+        char *buffer = palloc(length + 1);
+        if (fread(buffer, 1, length, fp) != length) {
+            fclose(fp);
+            pfree(buffer);
+            elog(ERROR, "Failed to read file");
+        }
+        buffer[length] = '\0';
+
+        cJSON *root = cJSON_Parse(buffer);
+
+        fclose(fp);
+        pfree(buffer);
+
+        if (root == NULL) {
+            elog(ERROR, "Error parsing aliases file");
+        }
+
+        cJSON const* aliases = cJSON_GetObjectItem(root, "aliases");
+        if (aliases == NULL) {
+            cJSON_Delete(root);
+            elog(ERROR, "Error parsing aliases file");
+        }
+
+        for (int i = 0; i < col_count; ++i) {
+            cJSON const* alias = cJSON_GetObjectItem(aliases, type_hints[i]);
+            if (alias == NULL)  continue;
+
+            char const* replacement = cJSON_GetStringValue(alias);
+            if (replacement == NULL) {
+                cJSON_Delete(root);
+                elog(ERROR, "Alias replacement must be string");
+            }
+            pfree(type_hints[i]);
+            type_hints[i] = pstrdup(replacement);
+        }
+
+        cJSON_Delete(root);
+    }
+
+    int out_size = 0;
+    PyObject **results = generate_multiple_by_types(type_hints, col_count, row_count, &out_size);
 
     if (results == NULL) {
         elog(ERROR, "Error calling Python");

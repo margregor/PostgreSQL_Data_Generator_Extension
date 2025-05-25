@@ -2,7 +2,7 @@ project(
   'my_new_extension',
   'c',
   version: '1.0',
-  default_options: ['buildtype=release', 'warning_level=3'],
+  default_options: ['buildtype=release', 'warning_level=3', 'default_library=static'],
 )
 add_project_arguments('-DWIN32', language: 'c')
 
@@ -19,6 +19,7 @@ bindir = run_command(pg_config, '--bindir', check: true).stdout().strip()
 
 postgres_lib = meson.get_compiler('c').find_library('postgres', dirs: libdir, required: true)
 python_dep = dependency('Python3')
+cjson_dep = dependency('libcjson')
 
 shared_module(
   'my_new_extension',
@@ -33,7 +34,8 @@ shared_module(
   ],
   dependencies: [
     postgres_lib,
-    python_dep
+    python_dep,
+    cjson_dep
     ],
   install: true,
   install_dir: pkglibdir,
