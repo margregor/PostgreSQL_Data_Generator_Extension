@@ -12,6 +12,7 @@
 #include <executor/spi.h>
 #include <miscadmin.h>
 #include <utils/fmgroids.h>
+#include <catalog/pg_type.h>
 #pragma warning(pop)
 #pragma endregion
 
@@ -41,10 +42,43 @@ void doPythonInitialize()
     inited = true;
 }
 
-void doPythonThings(char **type_hints, int col_count, int row_count,
-    Tuplestorestate *tupstore, TupleDesc tupdesc, bool *nulls)
+Datum convert_python_item_to_datum(PyObject *date_class, PyObject *item) {
+    Datum ret;
+
+    if (PyLong_Check(item)) {
+        PyObject *str_repr = PyObject_Str(item);
+        ret = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
+        Py_DECREF(str_repr);
+    } else if (PyFloat_Check(item)) {
+        PyObject *str_repr = PyObject_Str(item);
+        ret = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
+        Py_DECREF(str_repr);
+    } else if (PyBool_Check(item)) {
+        PyObject *str_repr = PyObject_Str(item);
+        ret = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
+        Py_DECREF(str_repr);
+    } else if (PyUnicode_Check(item)) {
+        ret = CStringGetTextDatum(PyUnicode_AsUTF8(item));
+    } else if (PyObject_IsInstance(item, date_class)) {
+        PyObject *isoFormatFunc = PyObject_GetAttrString(item, "isoformat");
+        PyObject *str_repr = PyObject_CallObject(isoFormatFunc, NULL);
+        const char *date_str = PyUnicode_AsUTF8(str_repr);
+        ret = CStringGetTextDatum(date_str);
+        Py_DECREF(str_repr);
+        Py_DECREF(isoFormatFunc);
+    } else {
+        PyObject *str_repr = PyObject_Str(item);
+        ret = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
+        Py_DECREF(str_repr);
+    }
+
+    return ret;
+}
+
+void doPythonThings(char **type_hints, const int col_count, const int row_count,
+                    Tuplestorestate *tupstore, const TupleDesc tupdesc, const bool *nulls)
 {
-    int num_arrays = row_count;  // Specify the number of arrays to generate
+    const int num_arrays = row_count;  // Specify the number of arrays to generate
     int out_size = 0;
 
     PyObject **results = generate_multiple_by_types(type_hints, col_count, num_arrays, &out_size);
@@ -64,46 +98,15 @@ void doPythonThings(char **type_hints, int col_count, int row_count,
     for (int i = 0; i < out_size; ++i) {
         PyObject *array_item = results[i];
 
-        if (!PyList_Check(array_item)) {
-            elog(WARNING, "Expected a list of values");
-            continue;
-        }
 
         printf("Array %d:\n", i + 1);
-        int array_size = (int)PyList_Size(array_item);
+        const int array_size = (int)PyList_Size(array_item);
 
         for (int j = 0; j < array_size; ++j) {
             PyObject *item = PyList_GetItem(array_item, j);
-
-            if (PyLong_Check(item)) {
-                PyObject *str_repr = PyObject_Str(item);
-                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
-                Py_DECREF(str_repr);
-            } else if (PyFloat_Check(item)) {
-                PyObject *str_repr = PyObject_Str(item);
-                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
-                Py_DECREF(str_repr);
-            } else if (PyBool_Check(item)) {
-                PyObject *str_repr = PyObject_Str(item);
-                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
-                Py_DECREF(str_repr);
-            } else if (PyUnicode_Check(item)) {
-                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(item));
-            } else if (PyObject_IsInstance(item, date_class)) {
-                PyObject *isoFormatFunc = PyObject_GetAttrString(item, "isoformat");
-                PyObject *str_repr = PyObject_CallObject(isoFormatFunc, NULL);
-                const char *date_str = PyUnicode_AsUTF8(str_repr);
-                //ret[j] = DirectFunctionCall1(date_in, CStringGetDatum(date_str));// We gotta check the expected types of the set and return a text or a dedicated type
-                ret[j] = CStringGetTextDatum(date_str);
-                Py_DECREF(str_repr);
-                Py_DECREF(isoFormatFunc);
-            } else {
-                PyObject *str_repr = PyObject_Str(item);
-                ret[j] = CStringGetTextDatum(PyUnicode_AsUTF8(str_repr));
-                Py_DECREF(str_repr);
-            }
-
+            ret[j] = convert_python_item_to_datum(date_class, item);
         }
+
         Py_DECREF(array_item);
         tuplestore_putvalues(tupstore, tupdesc, ret, nulls);
     }
