@@ -37,7 +37,7 @@ void doPythonInitialize()
     char extension_share_path[MAXPGPATH];
 
     get_share_path(my_exec_path, share_path);
-    join_path_components(extension_share_path, share_path, "my_new_extension");
+    join_path_components(extension_share_path, share_path, "database_data_generator");
     char* command = psprintf("import sys; sys.path.append(\"%s\")", extension_share_path);
     PyRun_SimpleString(command);
     pfree(command);
@@ -124,12 +124,12 @@ Datum convert_python_item_to_datum(PyObject *date_class, PyObject *item, Oid exp
     return ret;
 }
 
-void doPythonThings(char **type_hints, const int col_count, const int row_count,
+void doPythonGenerate(char **type_hints, const int col_count, const int row_count,
                     Tuplestorestate *tupstore, const TupleDesc tupdesc, const bool *nulls)
 {
     char alias_config_path[MAXPGPATH];
     get_share_path(my_exec_path, alias_config_path);
-    join_path_components(alias_config_path, alias_config_path, "my_new_extension");
+    join_path_components(alias_config_path, alias_config_path, "database_data_generator");
     join_path_components(alias_config_path, alias_config_path, "aliases.json");
 
     if (_access(alias_config_path, 0) == -1) {

@@ -1,4 +1,4 @@
 comment = 'testing things'
 default_version = '1.0'
-module_pathname = '$libdir/my_new_extension'
+module_pathname = '$libdir/database_data_generator'
 relocatable = true

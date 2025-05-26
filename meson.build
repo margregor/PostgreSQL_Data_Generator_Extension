@@ -1,5 +1,5 @@
 project(
-  'my_new_extension',
+  'database_data_generator',
   'c',
   version: '1.0',
   default_options: ['buildtype=release', 'warning_level=3', 'default_library=static'],
@@ -22,8 +22,8 @@ python_dep = dependency('Python3')
 cjson_dep = dependency('libcjson')
 
 shared_module(
-  'my_new_extension',
-  'my_new_extension.c',
+  'database_data_generator',
+  'database_data_generator.c',
   'python_interface.c',
   'py_interaction.c',
   include_directories: [
@@ -43,8 +43,8 @@ shared_module(
 )
 
 install_data(
-  'my_new_extension.control',
-  'my_new_extension--1.0.sql',
+  'database_data_generator.control',
+  'database_data_generator--1.0.sql',
   install_dir: sharedir / 'extension',
 )
 
@@ -54,7 +54,7 @@ install_data(
   'adress_generator.py',
   'personal_data.py',
   'personal_generator.py',
-  install_dir: sharedir / 'my_new_extension',
+  install_dir: sharedir / 'database_data_generator',
 )
 
 pg_regress = find_program('pg_regress', dirs: [libdir / 'pgxs' / 'src' / 'test' / 'regress'])

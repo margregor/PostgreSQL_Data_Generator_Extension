@@ -1,0 +1,3 @@
+CREATE FUNCTION generate_data(integer)
+RETURNS SETOF RECORD AS 'MODULE_PATHNAME', 'generate_data'
+LANGUAGE C STRICT;

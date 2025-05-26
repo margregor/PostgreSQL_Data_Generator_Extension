@@ -1,5 +1,5 @@
-CREATE EXTENSION my_new_extension;
-SELECT * FROM my_set_returning_function(10) AS t("date" TEXT, "integer" TEXT, "address" TEXT);
+CREATE EXTENSION database_data_generator;
+SELECT * FROM generate_data(10) AS t("date" TEXT, "integer" TEXT, "address" TEXT);
     date    | integer |        address        
 ------------+---------+-----------------------
  2025-04-13 | 123     | 123 Fake St, Faketown
@@ -14,4 +14,4 @@ SELECT * FROM my_set_returning_function(10) AS t("date" TEXT, "integer" TEXT, "a
  2025-04-13 | 123     | 123 Fake St, Faketown
 (10 rows)
 
-DROP EXTENSION my_new_extension;
+DROP EXTENSION database_data_generator;

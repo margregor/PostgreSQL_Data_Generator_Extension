@@ -19,15 +19,15 @@
 
 PG_MODULE_MAGIC;
 
-PG_FUNCTION_INFO_V1(my_set_returning_function);
+PG_FUNCTION_INFO_V1(generate_data);
 
-PGDLLEXPORT Datum my_set_returning_function(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum generate_data(PG_FUNCTION_ARGS)
 {
     ReturnSetInfo *rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
     TupleDesc tupdesc;
     const int row_count = PG_GETARG_INT32(0);
 
-    elog(DEBUG1, "Function my_set_returning_function called");
+    elog(DEBUG1, "Function generate_data called");
 
     if (row_count < 0)
         elog(ERROR, "Row count must be a non-negative integer");
@@ -68,7 +68,7 @@ PGDLLEXPORT Datum my_set_returning_function(PG_FUNCTION_ARGS)
     }
 
     doPythonInitialize();
-    doPythonThings(column_names, col_count, row_count,
+    doPythonGenerate(column_names, col_count, row_count,
         tupstore, tupdesc, nulls);
 
 

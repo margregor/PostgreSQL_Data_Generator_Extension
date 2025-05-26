@@ -18,6 +18,6 @@ Will probably require admin permissions
 
 In Postgres:
 ```sql
-CREATE EXTENSION my_new_extension;
-SELECT * FROM my_set_returning_function(10) AS t(col1 TEXT, col2 TEXT, col3 TEXT);
+CREATE EXTENSION database_data_generator;
+SELECT * FROM generate_data(10) AS t(col1 TEXT, col2 TEXT, col3 TEXT);
 ```
