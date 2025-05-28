@@ -22,7 +22,7 @@ jobs:
       - run: "mkdir scripts"
       - run: "Copy-Item -Path *.py -Destination scripts"
       - run: "Compress-Archive -Path scripts, database_data_generator--1.0.sql, database_data_generator.control, builddir\\database_data_generator.dll -DestinationPath release.zip"
-      - uses: comnoco/create-release@v2
+      - uses: actions/create-release@v1
         id: "create_release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
