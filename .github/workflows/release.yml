@@ -20,13 +20,16 @@ jobs:
           "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" && meson setup builddir && meson compile -C builddir
         shell: cmd
       - run: "mkdir scripts"
-      - run: "Copy-Item -Path *.py -Destination scripts"
-      - run: "Compress-Archive -Path scripts, database_data_generator--1.0.sql, database_data_generator.control, builddir\\database_data_generator.dll -DestinationPath release.zip"
+      - run: "Copy-Item -Path *.py -Destination database_data_generator"
+      - run: "mkdir extension"
+      - run: "Copy-Item -Path database_data_generator--1.0.sql, database_data_generator.control -Destination extension"
+      - run: "Compress-Archive -Path database_data_generator, extension, builddir\\database_data_generator.dll -DestinationPath release.zip"
       - uses: actions/create-release@v1
         id: "create_release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          tag_name: Release ${{ github.sha }}
           release_name: Release ${{ github.sha }}
           draft: false
           prerelease: false
@@ -36,7 +39,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./release.zip
-          asset_name: release.zip
+          asset_name: windows-x64.zip
           asset_content_type: application/zip
 
     
