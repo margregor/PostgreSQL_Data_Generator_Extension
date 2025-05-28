@@ -94,7 +94,7 @@ Datum convert_python_item_to_datum(PyObject *date_class, PyObject *item, Oid exp
         if (expected_type == TEXTOID) {
             ret = CStringGetTextDatum(PyUnicode_AsUTF8(item));
         } else {
-            elog(ERROR, "Unexpected type for text value");
+            elog(ERROR, "Unexpected return type for string value");
         }
     } else if (PyObject_IsInstance(item, date_class)) {
         if (expected_type == DATEOID) {
