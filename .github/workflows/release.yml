@@ -28,7 +28,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: tag
+          tag_name: "1.0"
           release_name: Release ${{ github.sha }}
           draft: false
           prerelease: false
