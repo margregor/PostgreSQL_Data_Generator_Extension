@@ -4084,7 +4084,7 @@ class PersonalGenerator:
     # wiek
     def get_birth_date(self):
         self.birth_date = date(random.randint(1900, 2025), random.randint(1,12), random.randint(1,28))
-        return self.birth_date.strftime('%Y-%m-%d')
+        return self.birth_date
 
     # pesel
     def get_month_code(self, year, month):

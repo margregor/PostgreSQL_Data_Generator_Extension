@@ -1,15 +1,17 @@
 # myscript.py
-from datetime import datetime
+from datetime import date
 from personal_generator import PersonalGenerator
 from adress_generator import AdressGenerator
 import random
 
-def interpret_type(type_str, person, adress):
+def interpret_type(type_str, person, adress, id):
     """Returns a placeholder value based on a type hint."""
     lower = type_str.strip().lower()
 
     if lower == "integer":
         return random.randint(1, 10000)
+    elif lower == "id":
+        return id
     elif lower == "float":
         return random.uniform(1.5, 9.5)
     elif lower == "bool":
@@ -35,7 +37,7 @@ def interpret_type(type_str, person, adress):
     elif lower == "postal_code":
         return adress.postal_code
     elif lower == "date":
-        return datetime(random.randint(1900, 2025), random.randint(1,12), random.randint(1,28)).date()
+        return date(random.randint(1900, 2025), random.randint(1,12), random.randint(1,28))
     elif lower == "string":
         return "RANDOM_STRING"
     else:
@@ -46,9 +48,9 @@ def generate_multiple_by_types(type_list, num_arrays):
     personal_generator = PersonalGenerator()
     adress_generator = AdressGenerator()
     result = []
-    for _ in range(num_arrays):
+    for i in range(num_arrays):
         person = personal_generator.get_personal_data()
         adress = adress_generator.get_adress()
         # For each array, generate corresponding objects based on type_list
-        result.append([interpret_type(t, person, adress) for t in type_list])
+        result.append([interpret_type(t, person, adress, i+1) for t in type_list])
     return result
