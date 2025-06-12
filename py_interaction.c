@@ -19,8 +19,8 @@
 #include <stdlib.h>
 #include "py_interaction.h"
 
-PyObject** generate_multiple_by_types(const char* inputs[], int count, int num_arrays, int* out_size) {
-    
+PyObject** generate_multiple_by_types(char* inputs[], int count, int num_arrays, int* out_size) {
+
 
     PyObject *pModule = PyImport_ImportModule("c_interaction");
     if (!pModule) {
