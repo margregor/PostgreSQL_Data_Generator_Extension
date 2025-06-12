@@ -203,11 +203,8 @@ void doPythonGenerate(char **type_hints, const int col_count, const int row_coun
     PyObject *datetime_module = PyImport_ImportModule("datetime");
     PyObject *date_class = PyObject_GetAttrString(datetime_module, "date");
 
-    printf("Generated values:\n");
-
     for (int i = 0; i < out_size; ++i) {
         PyObject *array_item = results[i];
-
 
         printf("Array %d:\n", i + 1);
         const int array_size = (int)PyList_Size(array_item);

@@ -25,7 +25,9 @@ jobs:
       - run: "Compress-Archive -Path database_data_generator, extension, builddir\\database_data_generator.dll -DestinationPath release.zip"
       - name: Get current date and time
         id: date
-        run: Get-Date -Format "dd-mm-yyyy"
+        run: |
+          $NOW=Get-Date -Format "dd-mm-yyyy"
+          $GITHUB_OUTPUT = "date=$NOW"
       - uses: actions/create-release@v1
         id: "create_release"
         env:
