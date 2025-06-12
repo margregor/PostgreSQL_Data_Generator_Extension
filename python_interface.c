@@ -27,7 +27,7 @@
 void doPythonInitialize()
 {
     static bool inited = false;
-    
+
     if (inited)
         return;
 
@@ -145,9 +145,14 @@ void doPythonGenerate(char **type_hints, const int col_count, const int row_coun
             elog(ERROR, "Failed to seek end of file");
         }
         const long length = ftell(fp);
+        if (length < 0) {
+            fclose(fp);
+            elog(ERROR, "Error reading config file size");
+        }
         rewind(fp);
         char *buffer = palloc(length + 1);
-        if (fread(buffer, 1, length, fp) != length) {
+
+        if (fread(buffer, 1, length, fp) != (unsigned long) length) {
             fclose(fp);
             pfree(buffer);
             elog(ERROR, "Failed to read file");
