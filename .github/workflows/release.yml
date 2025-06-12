@@ -23,13 +23,16 @@ jobs:
       - run: "mkdir extension"
       - run: "Copy-Item -Path database_data_generator--1.0.sql, database_data_generator.control -Destination extension"
       - run: "Compress-Archive -Path database_data_generator, extension, builddir\\database_data_generator.dll -DestinationPath release.zip"
+      - name: Get current date and time
+        id: date
+        run: Get-Date -Format "dd-mm-yyyy"
       - uses: actions/create-release@v1
         id: "create_release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.event.repository.updated_at }}
-          release_name: Release ${{ github.sha }}
+          tag_name: rolling-release-${{ steps.date.outputs.date }}
+          release_name: Release ${{ steps.date.outputs.date }}
           draft: false
           prerelease: false
       - uses: actions/upload-release-asset@v1

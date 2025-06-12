@@ -1,5 +1,5 @@
 An example extension for PostgreSQL 17
-![compilation](https://github.com/margregor/a_postgres_extension/actions/workflows/compile.yml/badge.svg)
+![compilation](https://github.com/margregor/a_postgres_extension/actions/workflows/release.yml/badge.svg)
 
 Requires pg_config.exe to be in PATH
 
