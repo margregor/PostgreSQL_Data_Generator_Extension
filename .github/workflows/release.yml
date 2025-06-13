@@ -26,8 +26,8 @@ jobs:
       - name: Get current date and time
         id: date
         run: |
-          $NOW=Get-Date -Format "dd-mm-yyyy"
-          $GITHUB_OUTPUT = "CURRENT_DATE=$NOW"
+          $NOW=& Get-Date -format "dd-mm-yyyy"
+          echo "CURRENT_DATE=$NOW" >> $env:GITHUB_ENV
       - uses: actions/create-release@v1
         id: "create_release"
         env:
