@@ -27,14 +27,14 @@ jobs:
         id: date
         run: |
           $NOW=Get-Date -Format "dd-mm-yyyy"
-          $GITHUB_OUTPUT = "date=$NOW"
+          $GITHUB_OUTPUT = echo $GITHUB_OUTPUT CURRENT_DATE=$NOW
       - uses: actions/create-release@v1
         id: "create_release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: rolling-release-${{ steps.date.outputs.date }}
-          release_name: Release ${{ steps.date.outputs.date }}
+          tag_name: rolling-release-${{ steps.date.outputs.CURRENT_DATE }}
+          release_name: Release ${{ steps.date.outputs.CURRENT_DATE }}
           draft: false
           prerelease: false
       - uses: actions/upload-release-asset@v1
