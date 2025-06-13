@@ -22,7 +22,11 @@ jobs:
       - run: "Copy-Item -Path *.py -Destination database_data_generator"
       - run: "mkdir extension"
       - run: "Copy-Item -Path database_data_generator--1.0.sql, database_data_generator.control -Destination extension"
-      - run: "Compress-Archive -Path database_data_generator, extension, builddir\\database_data_generator.dll -DestinationPath release.zip"
+      - run: "mkdir share"
+      - run: "Copy-Item -Path extension, database_data_generator -Destination share"
+      - run: "mkdir lib"
+      - run: "Copy-Item -Path builddir\\database_data_generator.dll -Destination lib"
+      - run: "Compress-Archive -Path share, lib -DestinationPath release.zip"
       - name: Test1
         id: t1
         uses: Kaven-Universe/github-action-current-date-time@v1
@@ -43,5 +47,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./release.zip
-          asset_name: windows-x64.zip
+          asset_name: databse-data-generator-${{ steps.create_release.outputs.upload_url }}-windows-x64.zip
           asset_content_type: application/zip
