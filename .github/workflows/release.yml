@@ -23,18 +23,18 @@ jobs:
       - run: "mkdir extension"
       - run: "Copy-Item -Path database_data_generator--1.0.sql, database_data_generator.control -Destination extension"
       - run: "Compress-Archive -Path database_data_generator, extension, builddir\\database_data_generator.dll -DestinationPath release.zip"
-      - name: Get current date and time
-        id: date
-        run: |
-          $NOW=& Get-Date -format "dd-mm-yyyy"
-          echo "CURRENT_DATE=$NOW" >> $env:GITHUB_ENV
+      - name: Test1
+        id: t1
+        uses: Kaven-Universe/github-action-current-date-time@v1
+        with:
+          format: "dd-mm-yyyy"
       - uses: actions/create-release@v1
         id: "create_release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: rolling-release-${{ steps.date.outputs.CURRENT_DATE }}
-          release_name: Release ${{ steps.date.outputs.CURRENT_DATE }}
+          tag_name: rolling-release-${{ steps.t1.outputs.time  }}
+          release_name: Release ${{ steps.t1.outputs.time  }}
           draft: false
           prerelease: false
       - uses: actions/upload-release-asset@v1
