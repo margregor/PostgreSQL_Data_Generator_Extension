@@ -27,14 +27,14 @@ jobs:
         id: t1
         uses: Kaven-Universe/github-action-current-date-time@v1
         with:
-          format: "dd-mm-yyyy"
+          format: "DD-MM-YYYY"
       - uses: actions/create-release@v1
         id: "create_release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: rolling-release-${{ steps.t1.outputs.time  }}
-          release_name: Release ${{ steps.t1.outputs.time  }}
+          tag_name: "rolling-release-${{ steps.t1.outputs.time }}"
+          release_name: Release ${{ steps.t1.outputs.time }}
           draft: false
           prerelease: false
       - uses: actions/upload-release-asset@v1
