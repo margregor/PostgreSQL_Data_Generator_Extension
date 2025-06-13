@@ -31,7 +31,7 @@ jobs:
         id: t1
         uses: Kaven-Universe/github-action-current-date-time@v1
         with:
-          format: "DD-MM-YYYY"
+          format: "DD-MM-YYYY-HH-mm"
       - uses: actions/create-release@v1
         id: "create_release"
         env:
